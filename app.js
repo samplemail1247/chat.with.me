@@ -18,12 +18,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
 const chatRef = ref(db, "globalChat");
 
 let username = "";
 
-// Join chat
+// Join
 window.joinChat = function () {
   username = document.getElementById("usernameInput").value.trim();
   if (!username) return alert("Enter your name!");
@@ -32,7 +31,7 @@ window.joinChat = function () {
   document.getElementById("chat").style.display = "block";
 };
 
-// Send message
+// Send
 window.sendMessage = function () {
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
@@ -47,17 +46,20 @@ window.sendMessage = function () {
   input.value = "";
 };
 
-// Receive messages
+// Receive
 onChildAdded(chatRef, (snapshot) => {
   const msg = snapshot.val();
 
   const div = document.createElement("div");
   div.classList.add("message");
+
+  if (msg.user === "ADMIN") {
+    div.classList.add("admin");
+  }
+
   div.innerText = `${msg.user}: ${msg.text}`;
 
   const messages = document.getElementById("messages");
   messages.appendChild(div);
-
-  // Auto scroll
   messages.scrollTop = messages.scrollHeight;
 });
