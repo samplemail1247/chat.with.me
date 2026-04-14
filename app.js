@@ -4,10 +4,11 @@ import {
   ref,
   push,
   onChildAdded,
-  off
+  get,
+  child
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ------------------ FIREBASE CONFIG ------------------ */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyCar5tl_EGeRHhvQke8IJITDi_zAArlN8c",
   authDomain: "chat-project-c5409.firebaseapp.com",
@@ -18,16 +19,14 @@ const firebaseConfig = {
   appId: "1:81449624717:web:86057269fd96be331aaec4"
 };
 
-/* ------------------ INIT ------------------ */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ------------------ STATE ------------------ */
 let username = "";
 let chatRef = null;
 
-/* ------------------ JOIN CHAT ------------------ */
-window.joinChat = () => {
+/* JOIN CHAT WITH DUPLICATE CHECK */
+window.joinChat = async () => {
   const input = document.getElementById("usernameInput");
   username = input.value.trim();
 
@@ -36,20 +35,27 @@ window.joinChat = () => {
     return;
   }
 
+  const snapshot = await get(child(ref(db), `chats/${username}`));
+
+  if (snapshot.exists()) {
+    alert("Username already taken. Try another.");
+    return;
+  }
+
   chatRef = ref(db, `chats/${username}`);
 
   document.getElementById("login").style.display = "none";
   document.getElementById("chat").style.display = "block";
 
-  startListening();
+  listenMessages();
 };
 
-/* ------------------ SEND MESSAGE ------------------ */
+/* SEND MESSAGE */
 window.sendMessage = () => {
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
 
-  if (!text || !chatRef) return;
+  if (!text) return;
 
   push(chatRef, {
     user: username,
@@ -60,24 +66,22 @@ window.sendMessage = () => {
   input.value = "";
 };
 
-/* ------------------ LISTENER ------------------ */
-function startListening() {
+/* LISTEN */
+function listenMessages() {
   onChildAdded(chatRef, (snapshot) => {
-    const msg = snapshot.val();
-    renderMessage(msg);
+    renderMessage(snapshot.val());
   });
 }
 
-/* ------------------ RENDER ------------------ */
+/* RENDER */
 function renderMessage(msg) {
   const div = document.createElement("div");
   div.classList.add("message");
-
   div.classList.add(msg.user === username ? "user" : "admin");
+
   div.innerText = msg.text;
 
   const messages = document.getElementById("messages");
   messages.appendChild(div);
-
   messages.scrollTop = messages.scrollHeight;
 }
