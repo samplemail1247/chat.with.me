@@ -5,7 +5,7 @@ body {
   color: white;
 }
 
-/* Login */
+/* LOGIN */
 #login {
   display: flex;
   height: 100vh;
@@ -20,6 +20,7 @@ body {
   text-align: center;
 }
 
+/* INPUTS */
 input {
   padding: 10px;
   width: 200px;
@@ -36,7 +37,7 @@ button {
   cursor: pointer;
 }
 
-/* Chat */
+/* CHAT */
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -50,35 +51,52 @@ button {
 }
 
 .message {
-  margin-bottom: 10px;
+  margin: 8px 0;
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 10px;
 }
 
+/* USER (right side) */
+.user {
+  background: #38bdf8;
+  margin-left: auto;
+  text-align: right;
+}
+
+/* ADMIN (left side) */
 .admin {
-  color: #38bdf8;
+  background: #1e293b;
 }
 
+/* INPUT */
 .input-area {
   display: flex;
   padding: 10px;
   background: #1e293b;
 }
 
+.input-area input {
+  flex: 1;
+  margin-right: 10px;
+}
+
+/* ADMIN PANEL */
 .admin-container {
   display: flex;
   height: 100vh;
 }
 
 .users {
-  width: 200px;
+  width: 220px;
   background: #020617;
-  padding: 10px;
   overflow-y: auto;
 }
 
 .user-item {
-  padding: 10px;
-  cursor: pointer;
+  padding: 12px;
   border-bottom: 1px solid #1e293b;
+  cursor: pointer;
 }
 
 .user-item:hover {
@@ -89,9 +107,4 @@ button {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-.input-area input {
-  flex: 1;
-  margin-right: 10px;
 }
