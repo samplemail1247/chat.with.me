@@ -5,7 +5,7 @@ body {
   color: white;
 }
 
-/* Center login */
+/* Login */
 #login {
   display: flex;
   height: 100vh;
@@ -36,7 +36,7 @@ button {
   cursor: pointer;
 }
 
-/* Chat UI */
+/* Chat */
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -51,6 +51,10 @@ button {
 
 .message {
   margin-bottom: 10px;
+}
+
+.admin {
+  color: #38bdf8;
 }
 
 .input-area {
