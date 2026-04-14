@@ -5,69 +5,99 @@ import {
   push,
   onValue,
   onChildAdded,
-  off
+  off,
+  remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ------------------ FIREBASE CONFIG ------------------ */
+/* CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyCar5tl_EGeRHhvQke8IJITDi_zAArlN8c",
   databaseURL: "https://chat-project-c5409-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
-/* ------------------ INIT ------------------ */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ------------------ STATE ------------------ */
 let currentUser = "";
-let currentChatRef = null;
+let currentRef = null;
 
-/* ------------------ LOAD USERS ------------------ */
+/* TOGGLE USERS (MOBILE) */
+window.toggleUsers = () => {
+  document.getElementById("userList").classList.toggle("active");
+};
+
+/* LOAD USERS (SORTED) */
 const usersRef = ref(db, "chats");
 
 onValue(usersRef, (snapshot) => {
   const userList = document.getElementById("userList");
   userList.innerHTML = "";
 
+  const users = [];
+
   snapshot.forEach((child) => {
-    const name = child.key;
+    let lastTime = 0;
 
-    const div = document.createElement("div");
-    div.classList.add("user-item");
-    div.innerText = name;
+    child.forEach(msg => {
+      lastTime = Math.max(lastTime, msg.val().time || 0);
+    });
 
-    div.onclick = () => openChat(name);
+    users.push({ name: child.key, lastTime });
+  });
 
-    userList.appendChild(div);
+  users.sort((a, b) => b.lastTime - a.lastTime);
+
+  users.forEach(({ name }) => {
+    userList.appendChild(createUserItem(name));
   });
 });
 
-/* ------------------ OPEN CHAT ------------------ */
+/* CREATE USER ITEM WITH DELETE */
+function createUserItem(name) {
+  const div = document.createElement("div");
+  div.classList.add("user-item");
+
+  const span = document.createElement("span");
+  span.innerText = name;
+  span.onclick = () => openChat(name);
+
+  const del = document.createElement("button");
+  del.innerText = "✕";
+  del.classList.add("delete-btn");
+
+  del.onclick = (e) => {
+    e.stopPropagation();
+    deleteUser(name);
+  };
+
+  div.appendChild(span);
+  div.appendChild(del);
+
+  return div;
+}
+
+/* OPEN CHAT */
 function openChat(user) {
   currentUser = user;
 
   const messagesDiv = document.getElementById("messages");
   messagesDiv.innerHTML = "";
 
-  // CLEAN OLD LISTENER
-  if (currentChatRef) {
-    off(currentChatRef);
-  }
+  if (currentRef) off(currentRef);
 
-  currentChatRef = ref(db, `chats/${user}`);
+  currentRef = ref(db, `chats/${user}`);
 
-  onChildAdded(currentChatRef, (snapshot) => {
-    const msg = snapshot.val();
-    renderMessage(msg);
+  onChildAdded(currentRef, (snapshot) => {
+    renderMessage(snapshot.val());
   });
+
+  // close menu on mobile after click
+  document.getElementById("userList").classList.remove("active");
 }
 
-/* ------------------ SEND MESSAGE ------------------ */
+/* SEND */
 window.sendMessage = () => {
-  if (!currentUser) {
-    alert("Select a user!");
-    return;
-  }
+  if (!currentUser) return alert("Select a user!");
 
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
@@ -83,16 +113,22 @@ window.sendMessage = () => {
   input.value = "";
 };
 
-/* ------------------ RENDER ------------------ */
+/* DELETE USER */
+function deleteUser(name) {
+  if (!confirm(`Delete ${name}?`)) return;
+
+  remove(ref(db, `chats/${name}`));
+}
+
+/* RENDER */
 function renderMessage(msg) {
   const div = document.createElement("div");
   div.classList.add("message");
-
   div.classList.add(msg.user === "ADMIN" ? "user" : "admin");
+
   div.innerText = msg.text;
 
   const messages = document.getElementById("messages");
   messages.appendChild(div);
-
   messages.scrollTop = messages.scrollHeight;
 }
