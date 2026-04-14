@@ -8,18 +8,21 @@ import {
   off
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+/* ------------------ FIREBASE CONFIG ------------------ */
 const firebaseConfig = {
   apiKey: "AIzaSyCar5tl_EGeRHhvQke8IJITDi_zAArlN8c",
   databaseURL: "https://chat-project-c5409-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
+/* ------------------ INIT ------------------ */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+/* ------------------ STATE ------------------ */
 let currentUser = "";
-let currentListener = null;
+let currentChatRef = null;
 
-// Load users list
+/* ------------------ LOAD USERS ------------------ */
 const usersRef = ref(db, "chats");
 
 onValue(usersRef, (snapshot) => {
@@ -39,56 +42,57 @@ onValue(usersRef, (snapshot) => {
   });
 });
 
-// Open chat safely (IMPORTANT FIX)
+/* ------------------ OPEN CHAT ------------------ */
 function openChat(user) {
   currentUser = user;
 
   const messagesDiv = document.getElementById("messages");
   messagesDiv.innerHTML = "";
 
-  const chatRef = ref(db, "chats/" + user);
-
-  // Remove old listener (CRITICAL FIX)
-  if (currentListener) {
-    off(currentListener);
+  // CLEAN OLD LISTENER
+  if (currentChatRef) {
+    off(currentChatRef);
   }
 
-  currentListener = chatRef;
+  currentChatRef = ref(db, `chats/${user}`);
 
-  onChildAdded(chatRef, (snapshot) => {
+  onChildAdded(currentChatRef, (snapshot) => {
     const msg = snapshot.val();
-
-    const div = document.createElement("div");
-    div.classList.add("message");
-
-    if (msg.user === "ADMIN") {
-      div.classList.add("user");
-    } else {
-      div.classList.add("admin");
-    }
-
-    div.innerText = msg.text;
-
-    messagesDiv.appendChild(div);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    renderMessage(msg);
   });
 }
 
-// Send reply
-window.sendMessage = function () {
-  if (!currentUser) return alert("Select a user!");
+/* ------------------ SEND MESSAGE ------------------ */
+window.sendMessage = () => {
+  if (!currentUser) {
+    alert("Select a user!");
+    return;
+  }
 
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
+
   if (!text) return;
 
-  const chatRef = ref(db, "chats/" + currentUser);
-
-  push(chatRef, {
+  push(ref(db, `chats/${currentUser}`), {
     user: "ADMIN",
-    text: text,
+    text,
     time: Date.now()
   });
 
   input.value = "";
 };
+
+/* ------------------ RENDER ------------------ */
+function renderMessage(msg) {
+  const div = document.createElement("div");
+  div.classList.add("message");
+
+  div.classList.add(msg.user === "ADMIN" ? "user" : "admin");
+  div.innerText = msg.text;
+
+  const messages = document.getElementById("messages");
+  messages.appendChild(div);
+
+  messages.scrollTop = messages.scrollHeight;
+}
