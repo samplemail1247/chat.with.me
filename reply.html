@@ -7,15 +7,17 @@
 </head>
 <body>
 
-<div class="chat-container">
+<div class="admin-container">
 
-  <h2 style="padding:10px;">Admin Chat Panel</h2>
+  <div class="users" id="userList"></div>
 
-  <div id="messages"></div>
+  <div class="chat">
+    <div id="messages"></div>
 
-  <div class="input-area">
-    <input id="messageInput" placeholder="Reply as Admin..." />
-    <button onclick="sendMessage()">Send</button>
+    <div class="input-area">
+      <input id="messageInput" placeholder="Reply..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
 
 </div>
