@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<button class="menu-btn" onclick="toggleUsers()">Menu</button>
+
+<div class="page-shell admin-page">
+  <div class="admin-container">
+    <aside class="users-panel">
+      <div class="users-panel-header">
+        <p class="eyebrow">Workspace</p>
+        <h1>Inbox</h1>
+        <p class="panel-copy">Open a chat from the list and reply without leaving the thread.</p>
+      </div>
+      <div class="users" id="userList"></div>
+    </aside>
+
+    <div class="chat">
+      <div class="chat-header">
+        <div>
+          <p class="header-kicker">Admin console</p>
+          <h2>Reply panel</h2>
+        </div>
+        <div class="header-status">
+          <span class="status-dot"></span>
+          Ready
+        </div>
+      </div>
+
+      <div id="messages"></div>
+
+      <div class="input-area">
+        <input id="messageInput" placeholder="Write a reply..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="reply.js"></script>
+</body>
+</html>
