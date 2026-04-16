@@ -244,8 +244,6 @@ function subscribeToInbox() {
       renderUserList();
       if (state.activeUserId === m.user_id) {
         renderActiveConversation();
-        btn.style.background =
-  state.activeUserId === user.id ? "#ddd" : "transparent";
       }
     })
     .subscribe();
@@ -317,4 +315,3 @@ function validateCredentials(email, password) {
   if (password.length < 6) return "Password too short";
   return "";
 }
-
