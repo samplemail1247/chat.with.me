@@ -2,7 +2,7 @@
 const SUPABASE_URL = "https://kymifcsiobnukgkreckd.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5bWlmY3Npb2JudWtna3JlY2tkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTQ1NjgsImV4cCI6MjA5MTg5MDU2OH0.UVLwpoHjo8X9ansWXrQhWyzEDuhhKJ4jvZdItbfW6ok";
 
-const supabaseClient = window.supabase.createClient(
+const supabase = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
@@ -10,6 +10,7 @@ const supabaseClient = window.supabase.createClient(
 // 📦 State
 let activeUserId = null;
 let messagesByUser = new Map();
+let usersList = [];
 
 // 🎯 Elements
 const el = {
@@ -22,7 +23,6 @@ const el = {
   userList: document.getElementById("userList"),
   messages: document.getElementById("adminMessages"),
   input: document.getElementById("adminMessageInput"),
-  sendBtn: document.getElementById("adminSendButton"),
 };
 
 // 🚀 INIT
@@ -55,43 +55,70 @@ async function login(e) {
   el.authPanel.classList.add("hidden");
   el.layout.classList.remove("hidden");
 
-  loadData();
+  await loadData();
   subscribe();
 }
 
-// 📥 LOAD USERS + MESSAGES
+// 📥 LOAD DATA
 async function loadData() {
   const { data: users } = await supabase.from("users").select("*");
-  const { data: messages } = await supabase.from("messages").select("*");
 
-  messagesByUser = group(messages || []);
+  const { data: messages } = await supabase
+    .from("messages")
+    .select("*")
+    .order("created_at", { ascending: true });
 
-  activeUserId = users?.[0]?.id || null;
+  usersList = users || [];
+  messagesByUser = groupMessages(messages || []);
 
-  renderUsers(users || []);
+  sortUsersByRecent();
+
+  activeUserId = usersList[0]?.id || null;
+
+  renderUsers();
   renderMessages();
 }
 
 // 🧩 GROUP MESSAGES
-function group(messages) {
+function groupMessages(messages) {
   const map = new Map();
+
   messages.forEach((m) => {
     if (!map.has(m.user_id)) map.set(m.user_id, []);
     map.get(m.user_id).push(m);
   });
+
   return map;
 }
 
-// 👥 USER LIST
-function renderUsers(users) {
+// 🔥 SORT USERS BY LATEST MESSAGE
+function sortUsersByRecent() {
+  usersList.sort((a, b) => {
+    const aMsgs = messagesByUser.get(a.id) || [];
+    const bMsgs = messagesByUser.get(b.id) || [];
+
+    const aLast = aMsgs[aMsgs.length - 1]?.created_at || 0;
+    const bLast = bMsgs[bMsgs.length - 1]?.created_at || 0;
+
+    return new Date(bLast) - new Date(aLast);
+  });
+}
+
+// 👥 RENDER USERS
+function renderUsers() {
   el.userList.innerHTML = "";
 
-  users.forEach((u) => {
+  usersList.forEach((u) => {
     const btn = document.createElement("button");
     btn.textContent = u.email;
 
+    if (u.id === activeUserId) {
+      btn.style.background = "#ddd";
+    }
+
     btn.onclick = () => {
       activeUserId = u.id;
+      renderUsers();
       renderMessages();
     };
 
@@ -99,7 +126,7 @@ function renderUsers(users) {
   });
 }
 
-// 💬 MESSAGES
+// 💬 RENDER MESSAGES
 function renderMessages() {
   el.messages.innerHTML = "";
 
@@ -114,23 +141,42 @@ function renderMessages() {
   el.messages.scrollTop = el.messages.scrollHeight;
 }
 
-// 📤 SEND
+// 📤 SEND MESSAGE
 async function sendMessage(e) {
   e.preventDefault();
 
   const text = el.input.value.trim();
   if (!text || !activeUserId) return;
 
-  await supabase.from("messages").insert({
+  const newMsg = {
     user_id: activeUserId,
     sender: "ADMIN",
     text,
-  });
+    created_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase.from("messages").insert(newMsg);
+
+  if (error) {
+    console.error("Send failed:", error);
+    return;
+  }
+
+  // instant UI update
+  if (!messagesByUser.has(activeUserId)) {
+    messagesByUser.set(activeUserId, []);
+  }
+
+  messagesByUser.get(activeUserId).push(newMsg);
+
+  sortUsersByRecent();
+  renderUsers();
+  renderMessages();
 
   el.input.value = "";
 }
 
-// 🔄 REALTIME
+// 🔄 REALTIME SUBSCRIBE
 function subscribe() {
   supabase
     .channel("messages")
@@ -143,6 +189,9 @@ function subscribe() {
         }
 
         messagesByUser.get(m.user_id).push(m);
+
+        sortUsersByRecent();
+        renderUsers();
 
         if (m.user_id === activeUserId) {
           renderMessages();
