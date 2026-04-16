@@ -7,7 +7,6 @@ window.__adminAppInitialized = true;
 // 🔗 Supabase
 const SUPABASE_URL = "https://kymifcsiobnukgkreckd.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5bWlmY3Npb2JudWtna3JlY2tkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTQ1NjgsImV4cCI6MjA5MTg5MDU2OH0.UVLwpoHjo8X9ansWXrQhWyzEDuhhKJ4jvZdItbfW6ok";
-const ADMIN_EMAIL = "admin@example.com";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
@@ -93,9 +92,10 @@ async function handleAdminLogin(event) {
     return;
   }
 
-  if (email !== ADMIN_EMAIL.toLowerCase()) {
+  // 🔥 ROLE CHECK (THIS IS THE KEY)
+  if (data.role !== "admin") {
     setLoginLoading(false);
-    setAuthStatus("Access denied", "error");
+    setAuthStatus("Access denied: Not an admin", "error");
     return;
   }
 
@@ -123,10 +123,15 @@ async function loadUsersAndMessages() {
   state.users = users || [];
   state.messagesByUser = groupMessagesByUser(messages || []);
 
-  state.activeUserId = state.users[0]?.id || null;
+  if (state.users.length > 0) {
+  state.activeUserId = state.users[0].id;
+} else {
+  state.activeUserId = null;
+}
 
   renderUserList();
   renderActiveConversation();
+  validateSendState();
 }
 
 // 🧩 GROUP
@@ -239,6 +244,8 @@ function subscribeToInbox() {
       renderUserList();
       if (state.activeUserId === m.user_id) {
         renderActiveConversation();
+        btn.style.background =
+  state.activeUserId === user.id ? "#ddd" : "transparent";
       }
     })
     .subscribe();
@@ -292,7 +299,7 @@ function setLoginLoading(loading, msg = "") {
 
 function setComposerBusy(busy) {
   elements.adminMessageInput.disabled = busy;
-  elements.adminSendButton.disabled = busy;
+  elements.adminSendButton.disabled = busy || !elements.adminMessageInput.value.trim();
 }
 
 function validateSendState() {
