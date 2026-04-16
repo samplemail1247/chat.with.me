@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 400px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    /* Progress Bar */
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .step {
+      width: 25%;
+      text-align: center;
+      position: relative;
+    }
+
+    .circle {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: gray;
+      margin: auto;
+      line-height: 25px;
+      font-size: 12px;
+    }
+
+    .active .circle {
+      background: #38bdf8;
+    }
+
+    .step p {
+      font-size: 10px;
+      margin-top: 5px;
+    }
+
+    .form-step {
+      display: none;
+      animation: fade 0.4s ease;
+    }
+
+    .form-step.active {
+      display: block;
+    }
+
+    @keyframes fade {
+      from {opacity: 0; transform: translateX(20px);}
+      to {opacity: 1; transform: translateX(0);}
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #38bdf8;
+      color: black;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+
+    .submit {
+      width: 100%;
+      background: #22c55e;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="brand">NEOKRA ACCESS</div>
+
+  <!-- Progress -->
+  <div class="steps">
+    <div class="step active"><div class="circle">1</div><p>Info</p></div>
+    <div class="step"><div class="circle">2</div><p>Account</p></div>
+    <div class="step"><div class="circle">3</div><p>Verify</p></div>
+    <div class="step"><div class="circle">4</div><p>Finish</p></div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="form-step active">
+    <h3>Basic Info</h3>
+    <input type="text" placeholder="Your Name" id="name">
+    <div class="buttons">
+      <button disabled>Back</button>
+      <button onclick="nextStep()">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="form-step">
+    <h3>Account Setup</h3>
+    <input type="email" placeholder="Email">
+    <div class="buttons">
+      <button onclick="prevStep()">Back</button>
+      <button onclick="nextStep()">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="form-step">
+    <h3>Verification</h3>
+    <input type="text" placeholder="Referral Code (optional)">
+    <div class="buttons">
+      <button onclick="prevStep()">Back</button>
+      <button onclick="nextStep()">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="form-step">
+    <h3>Complete</h3>
+    <p style="margin-top:10px;">You're ready to enter Neokra.</p>
+    <div class="buttons">
+      <button onclick="prevStep()">Back</button>
+      <button class="submit" onclick="submitForm()">Enter</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentStep = 0;
+
+  const steps = document.querySelectorAll(".form-step");
+  const indicators = document.querySelectorAll(".step");
+
+  function updateSteps() {
+    steps.forEach((step, i) => {
+      step.classList.toggle("active", i === currentStep);
+      indicators[i].classList.toggle("active", i <= currentStep);
+    });
+  }
+
+  function nextStep() {
+    if (currentStep < steps.length - 1) {
+      currentStep++;
+      updateSteps();
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 0) {
+      currentStep--;
+      updateSteps();
+    }
+  }
+
+  function submitForm() {
+    const name = document.getElementById("name").value;
+
+    if (!name) {
+      alert("Enter your name first.");
+      currentStep = 0;
+      updateSteps();
+      return;
+    }
+
+    alert("Welcome to Neokra, " + name + "!");
+  }
+</script>
+
+</body>
+</html>
