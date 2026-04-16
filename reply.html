@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Inbox</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body class="app-shell">
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="page page-admin">
+    <section class="panel auth-panel" id="adminAuthPanel">
+      <div class="panel-badge">Admin Workspace</div>
+      <h1>Support inbox</h1>
+      <p class="panel-copy">
+        Sign in with your admin account to reply to customers in real time.
+      </p>
+
+      <form class="auth-form" id="adminAuthForm">
+        <div class="field-group">
+          <label for="adminEmail">Email</label>
+          <input id="adminEmail" name="email" type="email" placeholder="admin@example.com" autocomplete="email" required />
+        </div>
+
+        <div class="field-group">
+          <label for="adminPassword">Password</label>
+          <input id="adminPassword" name="password" type="password" placeholder="Your password" autocomplete="current-password" required />
+        </div>
+
+        <div class="auth-actions">
+          <button class="button button-primary" type="submit" id="adminLoginButton">Access Inbox</button>
+        </div>
+
+        <p class="helper-text">Set your admin email in <code>reply.js</code> before deploying.</p>
+        <p class="status-message" id="adminAuthStatus" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="admin-layout hidden" id="adminLayout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div>
+            <p class="eyebrow">Realtime</p>
+            <h2>Customers</h2>
+          </div>
+          <button class="button button-ghost icon-only mobile-only" id="closeSidebarButton" type="button" aria-label="Close sidebar">&times;</button>
+        </div>
+
+        <div class="sidebar-meta">
+          <span class="user-chip" id="adminEmailChip"></span>
+          <button class="button button-ghost" id="adminLogoutButton" type="button">Logout</button>
+        </div>
+
+        <div class="user-list" id="userList"></div>
+      </aside>
+
+      <section class="admin-chat">
+        <header class="chat-header">
+          <div class="header-main">
+            <button class="button button-ghost icon-only mobile-only" id="openSidebarButton" type="button" aria-label="Open sidebar">&#9776;</button>
+            <div>
+              <p class="eyebrow">Active chat</p>
+              <h2 id="activeUserTitle">Select a conversation</h2>
+            </div>
+          </div>
+
+          <button class="button button-danger hidden" id="deleteUserButton" type="button">Delete User</button>
+        </header>
+
+        <section class="chat-card">
+          <div class="chat-messages" id="adminMessages"></div>
+
+          <form class="chat-input-bar" id="adminMessageForm">
+            <input
+              class="chat-input"
+              id="adminMessageInput"
+              type="text"
+              placeholder="Reply as admin..."
+              maxlength="2000"
+              autocomplete="off"
+              disabled
+            />
+            <button class="button button-primary" id="adminSendButton" type="submit" disabled>Send</button>
+          </form>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./reply.js"></script>
+</body>
+</html>
