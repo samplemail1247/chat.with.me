@@ -317,4 +317,4 @@ function validateCredentials(email, password) {
   if (password.length < 6) return "Password too short";
   return "";
 }
-console.log("Logged in user:", data);
+
